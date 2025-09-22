@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Cloud PoC Project - Sequence Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            min-height: 600px;
+        }
+        
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+    </style>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#5a67d8',
+                lineColor: '#5c6ac4',
+                secondaryColor: '#f7fafc',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#667eea',
+                secondBkg: '#f7fafc',
+                tertiaryBkg: '#e2e8f0',
+                fontSize: '16px'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 30,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: true,
+                bottomMarginAdj: 1,
+                useMaxWidth: true,
+                rightAngles: false,
+                showSequenceNumbers: true
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>IBM Cloud PoC Project Workflow</h1>
+        <p class="subtitle">Sequence Diagram for GPU Computing Infrastructure</p>
+        
+        <div class="diagram-container">
+            <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant R as Researcher (Lab)
+    participant IBM as IBM Cloud PoC Project
+    participant COS as Cloud Object Storage (COS)
+    participant GPU as GPU VSI (Compute)
+    participant BLK as Block Storage (Scratch)
+    participant MON as Budget & Alerts
+    
+    Note over R,IBM: Synthetic/de-identified datasets only (no PHI)
+    
+    R->>IBM: Request PoC access
+    IBM-->>R: Credentials & tagging policy
+    R->>IBM: Provision GPU VSI + Block (apply tags)
+    IBM-->>GPU: Instance created (SSH reachable)
+    IBM-->>BLK: Volume attached
+    R->>COS: Upload synthetic dataset (SFTP/Aspera over TLS)
+    R->>GPU: SSH install toolchain (Cell Ranger / CUDA+ML)
+    GPU->>COS: GET dataset (stage from COS)
+    COS-->>GPU: Dataset stream
+    GPU->>BLK: Write working set
+    R->>GPU: Execute workload (manual run)
+    GPU-->>R: Job status / logs
+    GPU->>COS: Push results (artifacts/outputs)
+    MON-->>IBM: Budget alerts at 60/80/100%
+    MON-->>R: Usage notice (optional)
+    R->>GPU: Teardown (delete VSI)
+    R->>BLK: Delete volumes
+    IBM->>IBM: Weekly idle check (expect zero orphaned assets)
+    
+    Note over R,IBM: Close-out metrics, run ledger, lessons learned
+            </pre>
+        </div>
+        
+        <div class="info-box">
+            <h3>📋 Key Workflow Components</h3>
+            <ul>
+                <li><strong>Researcher (Lab)</strong>: Initiates and manages the PoC project</li>
+                <li><strong>IBM Cloud PoC Project</strong>: Core infrastructure and access management</li>
+                <li><strong>Cloud Object Storage (COS)</strong>: Secure data storage for datasets and results</li>
+                <li><strong>GPU VSI (Compute)</strong>: GPU-enabled virtual server instance for processing</li>
+                <li><strong>Block Storage (Scratch)</strong>: Temporary working storage for active computations</li>
+                <li><strong>Budget & Alerts</strong>: Cost monitoring and notification system</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔒 Security & Compliance</h3>
+            <ul>
+                <li>Only synthetic/de-identified datasets permitted (no PHI)</li>
+                <li>Secure data transfer via SFTP/Aspera over TLS</li>
+                <li>SSH access for compute instance management</li>
+                <li>Complete resource teardown after project completion</li>
+                <li>Weekly idle resource checks to prevent orphaned assets</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

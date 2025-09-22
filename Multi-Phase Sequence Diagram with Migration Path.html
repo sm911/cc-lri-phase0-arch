@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Cloud PoC - Complete Workflow Sequence</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            min-height: 800px;
+        }
+        
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+        
+        .phase-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .phase-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        
+        .phase-card h4 {
+            margin-top: 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .phase-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .badge-manual { background: #fef5e7; color: #f6ad55; }
+        .badge-cli { background: #e8f4fd; color: #4299e1; }
+        .badge-iac { background: #e8f8f5; color: #48bb78; }
+        .badge-optional { background: #f0e6ff; color: #9f7aea; }
+    </style>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#5a67d8',
+                lineColor: '#5c6ac4',
+                secondaryColor: '#f7fafc',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#667eea',
+                secondBkg: '#f7fafc',
+                tertiaryBkg: '#e2e8f0',
+                fontSize: '14px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 30,
+                actorMargin: 50,
+                width: 140,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: false,
+                bottomMarginAdj: 1,
+                useMaxWidth: true,
+                rightAngles: false,
+                showSequenceNumbers: true,
+                actorFontSize: '14px',
+                actorFontFamily: 'inherit',
+                messageFontSize: '13px',
+                noteFontSize: '13px',
+                wrapPadding: 10
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>IBM Cloud PoC Complete Workflow</h1>
+        <p class="subtitle">Multi-Phase Sequence Diagram with Migration Path</p>
+        
+        <div class="diagram-container">
+            <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Researcher
+    participant Admin as Jim (Admin)
+    participant CCIT as CC IT (Santino)
+    participant SSO as IDP/SSO (Federation)
+    box IBM Cloud PoC Account
+        participant UI as IBM Cloud Web UI
+        participant CLI as ibmcloud CLI
+        participant Schematics as IBM Cloud Schematics
+        participant VPC as VPC/Subnets/SG/Public GW
+        participant GPU as GPU VSI (Lab i)
+        participant COS as Cloud Object Storage
+        participant Budget as Billing and Budget Alerts
+        participant Sec as Security Workload Protection (opt)
+        participant Ansible as Ansible Controller (opt)
+    end
+    box IBM Cloud LRI-Owned Account (Final)
+        participant VPC2 as VPC/Subnets/SG (LRI)
+        participant GPU2 as GPU VSI (LRI)
+        participant COS2 as Cloud Object Storage (LRI)
+    end
+    
+    Note over Researcher,Admin: Phase 0 = manual, self-managed SFTP-only synthetic/anonymized data (no PHI)
+    
+    Admin->>SSO: Authenticate (IBMid or federated SSO)
+    Admin->>UI: Create foundation (VPC, Subnets, SG, SSH Key, COS)
+    UI->>VPC: Provision network baseline
+    UI->>COS: Create bucket/prefix and tags
+    
+    alt Phase 0 Manual (GUI)
+        Admin->>UI: Create GPU VSI + attach volumes + public IP
+    else CLI path (Phase 0B)
+        Admin->>CLI: Provision lab stack (GPU + volumes + SG)
+    else Schematics baseline
+        Admin->>Schematics: Apply foundation and lab workspaces (vars per lab)
+        Schematics->>VPC: Create/Update resources declaratively
+    end
+    
+    Researcher->>GPU: SFTP upload synthetic/anonymized dataset (SSH/22)
+    GPU->>GPU: Run workload (verify accelerator toolchain)
+    GPU->>COS: Upload results (checksums/logs)
+    Budget-->>Admin: Tagged usage threshold alert
+    
+    opt Optional config experiments
+        Admin->>Ansible: Run playbooks (drivers, packages, config)
+        Ansible->>GPU: Apply runtime configuration
+    end
+    
+    opt Optional security validation
+        Sec-->>VPC: Posture checks / agent scans
+    end
+    
+    par Prepare transfer to LRI account
+        Admin->>Schematics: Export variables/state and module refs
+        Admin->>COS2: Copy/sync datasets/results (cross-account)
+    and Build target landing zone
+        Admin->>VPC2: Recreate VPC/Subnets/SG via Schematics (LRI credentials)
+    end
+    
+    Schematics->>GPU2: Recreate GPU VSIs + volumes (per-lab)
+    COS2-->>Researcher: Retrieve outputs (as needed)
+    CCIT-->>Admin: Phase 0+ security/compliance requirements (paid scope trigger)
+    
+    Note over Researcher,GPU: Some Phase 0 runs may use anonymized production data per LRI policy
+            </pre>
+        </div>
+        
+        <div class="phase-box">
+            <div class="phase-card">
+                <h4>📋 Phase 0A <span class="badge badge-manual">Manual</span></h4>
+                <p>Initial proof of concept using IBM Cloud Web UI. Manual provisioning of resources, suitable for quick experiments and validation.</p>
+            </div>
+            <div class="phase-card">
+                <h4>⌨️ Phase 0B <span class="badge badge-cli">CLI</span></h4>
+                <p>Command-line driven provisioning using ibmcloud CLI. Provides scriptable, repeatable deployments while maintaining manual control.</p>
+            </div>
+            <div class="phase-card">
+                <h4>🔧 Schematics <span class="badge badge-iac">IaC</span></h4>
+                <p>Infrastructure as Code approach using IBM Cloud Schematics. Declarative resource management with version control and state tracking.</p>
+            </div>
+            <div class="phase-card">
+                <h4>🚀 Phase 0+ <span class="badge badge-optional">Migration</span></h4>
+                <p>Transition to LRI-owned account with enhanced security and compliance. Full production readiness with enterprise controls.</p>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>👥 Key Stakeholders</h3>
+            <ul>
+                <li><strong>Researcher</strong>: End user conducting experiments on GPU infrastructure</li>
+                <li><strong>Jim (Admin)</strong>: Primary administrator managing infrastructure provisioning</li>
+                <li><strong>CC IT (Santino)</strong>: Compliance and security oversight</li>
+                <li><strong>IDP/SSO Federation</strong>: Identity provider for authentication</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🏗️ Infrastructure Components</h3>
+            <ul>
+                <li><strong>VPC & Networking</strong>: Virtual Private Cloud with subnets, security groups, and public gateway</li>
+                <li><strong>GPU VSI</strong>: GPU-enabled Virtual Server Instances for compute workloads</li>
+                <li><strong>Cloud Object Storage</strong>: Secure storage for datasets and results</li>
+                <li><strong>IBM Cloud Schematics</strong>: Terraform-based infrastructure automation</li>
+                <li><strong>Budget Alerts</strong>: Cost monitoring with threshold notifications</li>
+                <li><strong>Optional Tools</strong>: Ansible for configuration management, Security Workload Protection for compliance</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔄 Workflow Patterns</h3>
+            <ul>
+                <li><strong>Alternative Flows (alt/else)</strong>: Multiple provisioning paths based on complexity needs</li>
+                <li><strong>Optional Steps (opt)</strong>: Additional configuration and security validation as needed</li>
+                <li><strong>Parallel Execution (par/and)</strong>: Simultaneous preparation for account migration</li>
+                <li><strong>Cross-Account Migration</strong>: Seamless transition from PoC to production LRI account</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔒 Data & Security Policies</h3>
+            <ul>
+                <li><strong>Phase 0 Restrictions</strong>: Synthetic/anonymized data only, no PHI allowed</li>
+                <li><strong>Access Control</strong>: Federated SSO authentication required</li>
+                <li><strong>Network Security</strong>: SFTP-only data transfer over SSH port 22</li>
+                <li><strong>Resource Tagging</strong>: Mandatory tagging for cost allocation and tracking</li>
+                <li><strong>Compliance Escalation</strong>: Phase 0+ triggers enhanced security requirements</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

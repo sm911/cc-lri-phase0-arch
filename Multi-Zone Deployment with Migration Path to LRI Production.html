@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Cloud PoC - Architecture Flowchart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            min-height: 800px;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            color: #444;
+            font-size: 1.2em;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-symbol {
+            width: 40px;
+            height: 25px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+        
+        .compute-legend {
+            background: #ffe9e9;
+            border-color: #aa3333;
+        }
+        
+        .storage-legend {
+            background: #e8ffe8;
+            border-color: #22aa88;
+        }
+        
+        .network-legend {
+            background: #e8f1ff;
+            border-color: #3366cc;
+        }
+        
+        .control-legend {
+            background: #f3f3f3;
+            border-color: #777777;
+        }
+        
+        .optional-legend {
+            background: white;
+            border-color: #888888;
+            border-style: dashed;
+        }
+        
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .zone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .zone-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        
+        .zone-card h4 {
+            margin-top: 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .zone-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .zone-card ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #555;
+        }
+        
+        .zone-card li {
+            margin: 5px 0;
+        }
+    </style>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#111',
+                primaryBorderColor: '#5a67d8',
+                lineColor: '#5c6ac4',
+                secondaryColor: '#f7fafc',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f7fafc',
+                tertiaryBkg: '#e2e8f0',
+                fontSize: '14px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                rankSpacing: 80,
+                nodeSpacing: 30,
+                subGraphTitleMargin: {
+                    top: 10,
+                    bottom: 10
+                },
+                defaultRenderer: 'dagre',
+                wrappingWidth: 150
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>IBM Cloud PoC Infrastructure Architecture</h1>
+        <p class="subtitle">Multi-Zone Deployment with Migration Path to LRI Production</p>
+        
+        <div class="diagram-container">
+            <pre class="mermaid">
+flowchart LR
+    %% Styles
+    classDef compute fill:#ffe9e9,stroke:#a33,color:#111
+    classDef storage fill:#e8ffe8,stroke:#2a8,color:#111
+    classDef network fill:#e8f1ff,stroke:#36c,color:#111
+    classDef control fill:#f3f3f3,stroke:#777,color:#111
+    classDef optional stroke-dasharray: 5 5,stroke:#888,color:#555
+    
+    %% On-prem / users
+    subgraph ONP["LRI On-Prem / Researchers"]
+        RW[Researcher Workstations<br/>SSH/SFTP Clients]
+        ANON[(Anonymized Production Data<br/>optional input)]
+    end
+    
+    %% PoC account (IBM-owned or shared POC)
+    subgraph POC["IBM Cloud – PoC Account (Phase 0)"]
+        IAM[IAM / SSO Federation]:::control
+        RM[Resource Manager & Tags]:::control
+        SCH[Schematics<br/>Workspaces: foundation / lab]:::control
+        MON[Billing & Budget Alerts]:::control
+        
+        subgraph VPC["VPC: lri-phase0-vpc"]
+            direction TB
+            PGW[Public Gateways]:::network
+            SUBA[Subnet A]:::network
+            SUBB[Subnet B]:::network
+            SG[Security Groups<br/>SSH 22 allow-listed]:::network
+            BAST[(Bastion Host<br/>optional)]:::optional
+            L1[GPU VSI – Lab1]:::compute
+            L2[GPU VSI – Lab2]:::compute
+            L3[GPU VSI – Lab3]:::compute
+            L4[GPU VSI – Lab4]:::compute
+            L1D[(Block Vols)]:::storage
+            L2D[(Block Vols)]:::storage
+            L3D[(Block Vols)]:::storage
+            L4D[(Block Vols)]:::storage
+        end
+        
+        COS[(Cloud Object Storage<br/>bucket or per-lab prefixes)]:::storage
+        ANS[(Ansible Controller – optional)]:::optional
+        SEC[(Security Workload Protection – optional)]:::optional
+    end
+    
+    %% LRI-owned target account
+    subgraph LRI["IBM Cloud – LRI-Owned Account (Final Landing Zone)"]
+        LRI_IAM[IAM / Policies & Guardrails]:::control
+        LRI_SCH[Schematics re-apply state/vars]:::control
+        
+        subgraph LRI_VPC["VPC (target)"]
+            LRI_PGW[Public Gateways]:::network
+            LRI_SUBA[Subnet A]:::network
+            LRI_SUBB[Subnet B]:::network
+            LRI_SG[Security Groups<br/>LRI policy]:::network
+            LRI_BAST[(Bastion Host – optional)]:::optional
+            LRI_GPU[GPU VSIs per-lab]:::compute
+            LRI_BLK[(Block Vols)]:::storage
+        end
+        
+        LRI_COS[(Cloud Object Storage – target)]:::storage
+    end
+    
+    %% Data / control flows
+    RW -- "SFTP (SSH/22)" --> L1
+    RW -- "SFTP (SSH/22)" --> L2
+    RW -- "SFTP (SSH/22)" --> L3
+    RW -- "SFTP (SSH/22)" --> L4
+    ANON -. "optional dataset" .-> L1
+    L1 --> COS
+    L2 --> COS
+    L3 --> COS
+    L4 --> COS
+    
+    %% Optional private-only access
+    RW -. "SSH via Bastion" .-> BAST
+    BAST -.-> L1
+    BAST -.-> L2
+    BAST -.-> L3
+    BAST -.-> L4
+    
+    %% Automation / security
+    SCH --> VPC
+    SCH --> COS
+    ANS -. "Playbooks: drivers, pkgs, configs" .-> L1
+    ANS -.-> L2
+    ANS -.-> L3
+    ANS -.-> L4
+    SEC -. "Posture/agent checks (opt)" .-> VPC
+    MON --> RM
+    
+    %% Transfer / cutover path
+    COS -- "copy/sync (cross-account)" --> LRI_COS
+    SCH -- "vars/state replay" --> LRI_SCH
+    LRI_SCH --> LRI_VPC
+    LRI_SCH --> LRI_GPU
+    LRI_IAM --> LRI_VPC
+            </pre>
+        </div>
+        
+        <div class="legend">
+            <h3>📊 Component Types</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-symbol compute-legend"></div>
+                    <span><strong>Compute Resources</strong><br/>GPU VSIs, Processing</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol storage-legend"></div>
+                    <span><strong>Storage Systems</strong><br/>COS, Block Volumes</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol network-legend"></div>
+                    <span><strong>Network Components</strong><br/>VPC, Subnets, Gateways</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol control-legend"></div>
+                    <span><strong>Control Plane</strong><br/>IAM, Schematics, Monitoring</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol optional-legend"></div>
+                    <span><strong>Optional Components</strong><br/>Bastion, Ansible, Security</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="zone-grid">
+            <div class="zone-card">
+                <h4>🏢 On-Premises Environment</h4>
+                <p>Researcher workstations and data preparation zone</p>
+                <ul>
+                    <li>SSH/SFTP client access</li>
+                    <li>Anonymized production data (optional)</li>
+                    <li>Direct connectivity to cloud resources</li>
+                </ul>
+            </div>
+            
+            <div class="zone-card">
+                <h4>☁️ PoC Account (Phase 0)</h4>
+                <p>IBM Cloud proof-of-concept environment</p>
+                <ul>
+                    <li>4 GPU VSI labs with block storage</li>
+                    <li>Infrastructure-as-Code via Schematics</li>
+                    <li>Budget monitoring and alerts</li>
+                    <li>Optional: Ansible automation, Security scanning</li>
+                </ul>
+            </div>
+            
+            <div class="zone-card">
+                <h4>🏭 LRI Production Account</h4>
+                <p>Final production-ready landing zone</p>
+                <ul>
+                    <li>Enhanced IAM policies and guardrails</li>
+                    <li>Replicated infrastructure from PoC</li>
+                    <li>Cross-account data migration</li>
+                    <li>Enterprise-grade security controls</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔄 Data Flow Patterns</h3>
+            <ul>
+                <li><strong>Primary Access Path</strong>: Researchers → SFTP/SSH → Individual GPU VSIs (Labs 1-4)</li>
+                <li><strong>Bastion Access (Optional)</strong>: Researchers → Bastion Host → Private GPU VSIs</li>
+                <li><strong>Data Pipeline</strong>: GPU VSIs → Process → Cloud Object Storage</li>
+                <li><strong>Migration Path</strong>: PoC COS → Cross-account sync → LRI COS</li>
+                <li><strong>Infrastructure Replay</strong>: PoC Schematics → Export state/vars → LRI Schematics</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🛡️ Security Architecture</h3>
+            <ul>
+                <li><strong>Network Isolation</strong>: VPC with controlled subnets and security groups</li>
+                <li><strong>Access Control</strong>: SSH port 22 with allow-listing, optional bastion host</li>
+                <li><strong>Identity Management</strong>: Federated SSO with IAM policies</li>
+                <li><strong>Data Protection</strong>: Anonymized datasets only in Phase 0</li>
+                <li><strong>Optional Hardening</strong>: Security Workload Protection for posture management</li>
+                <li><strong>Compliance Escalation</strong>: Enhanced controls in LRI production account</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>⚙️ Automation & Operations</h3>
+            <ul>
+                <li><strong>Infrastructure as Code</strong>: IBM Cloud Schematics (Terraform-based) for declarative management</li>
+                <li><strong>Configuration Management</strong>: Optional Ansible for runtime configuration</li>
+                <li><strong>Resource Tagging</strong>: Consistent tagging strategy for cost allocation</li>
+                <li><strong>Budget Monitoring</strong>: Automated alerts for threshold breaches</li>
+                <li><strong>State Management</strong>: Exportable Schematics workspaces for account migration</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

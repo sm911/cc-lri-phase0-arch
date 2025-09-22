@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Cloud PoC Project - Component Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            margin-bottom: 30px;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            min-height: 600px;
+        }
+        
+        .info-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-symbol {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#5a67d8',
+                lineColor: '#5c6ac4',
+                secondaryColor: '#f7fafc',
+                tertiaryColor: '#e2e8f0',
+                background: '#ffffff',
+                mainBkg: '#667eea',
+                secondBkg: '#f7fafc',
+                tertiaryBkg: '#e2e8f0',
+                fontSize: '14px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                rankSpacing: 60,
+                nodeSpacing: 60,
+                padding: 20
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>IBM Cloud PoC Architecture</h1>
+        <p class="subtitle">Component Diagram for GPU Computing Infrastructure</p>
+        
+        <div class="diagram-container">
+            <pre class="mermaid">
+graph TB
+    subgraph External["External Layer"]
+        R[["👤 Researcher<br/>(Lab Environment)"]]
+    end
+    
+    subgraph Access["Access & Control Layer"]
+        IAM["🔐 Identity & Access<br/>Management"]
+        TAGS["🏷️ Tagging Policy<br/>& Governance"]
+    end
+    
+    subgraph Compute["Compute Layer"]
+        GPU["🖥️ GPU VSI<br/>(Virtual Server Instance)"]
+        TOOLS["🛠️ Toolchain<br/>(Cell Ranger / CUDA+ML)"]
+        GPU -.->|contains| TOOLS
+    end
+    
+    subgraph Storage["Storage Layer"]
+        COS["☁️ Cloud Object Storage<br/>(COS)"]
+        BLK["💾 Block Storage<br/>(Scratch Space)"]
+        
+        subgraph COS_Details["COS Contents"]
+            DS["📊 Synthetic Datasets"]
+            RES["📈 Results & Artifacts"]
+        end
+        
+        COS -.->|stores| COS_Details
+    end
+    
+    subgraph Network["Network & Transfer Layer"]
+        SFTP["🔒 SFTP/Aspera<br/>(TLS Encrypted)"]
+        SSH["🔐 SSH Access"]
+    end
+    
+    subgraph Monitoring["Monitoring & Management Layer"]
+        MON["📊 Budget Monitor"]
+        ALERTS["🚨 Alert System<br/>(60% / 80% / 100%)"]
+        IDLE["🔍 Idle Resource<br/>Checker"]
+        
+        MON -->|triggers| ALERTS
+        MON -->|weekly scan| IDLE
+    end
+    
+    %% Connections
+    R ===>|1. Request Access| IAM
+    IAM -->|Credentials| R
+    R ===>|2. Provision Resources| TAGS
+    TAGS -->|Apply Tags| GPU
+    TAGS -->|Apply Tags| BLK
+    
+    R ===>|3. Upload Data| SFTP
+    SFTP -->|Secure Transfer| COS
+    
+    R ===>|4. Connect| SSH
+    SSH -->|Remote Access| GPU
+    
+    GPU <-->|5. Stage Data| COS
+    GPU <-->|6. Working Storage| BLK
+    GPU -->|7. Push Results| COS
+    
+    GPU -.->|Resource Usage| MON
+    BLK -.->|Resource Usage| MON
+    COS -.->|Storage Usage| MON
+    
+    ALERTS -->|Notifications| R
+    IDLE -->|Cleanup Reports| IAM
+    
+    classDef external fill:#f9f9ff,stroke:#667eea,stroke-width:3px,color:#333
+    classDef access fill:#e8f4fd,stroke:#4299e1,stroke-width:2px,color:#333
+    classDef compute fill:#fef5e7,stroke:#f6ad55,stroke-width:2px,color:#333
+    classDef storage fill:#e8f8f5,stroke:#48bb78,stroke-width:2px,color:#333
+    classDef network fill:#fdf2f8,stroke:#ed64a6,stroke-width:2px,color:#333
+    classDef monitoring fill:#f0e6ff,stroke:#9f7aea,stroke-width:2px,color:#333
+    classDef details fill:#fff,stroke:#cbd5e0,stroke-width:1px,stroke-dasharray: 5 5,color:#555
+    
+    class R external
+    class IAM,TAGS access
+    class GPU,TOOLS compute
+    class COS,BLK,DS,RES storage
+    class SFTP,SSH network
+    class MON,ALERTS,IDLE monitoring
+    class COS_Details details
+            </pre>
+        </div>
+        
+        <div class="legend">
+            <h3>📋 Component Types</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #f9f9ff; border: 2px solid #667eea;"></div>
+                    <span>External Users</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #e8f4fd; border: 2px solid #4299e1;"></div>
+                    <span>Access Control</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #fef5e7; border: 2px solid #f6ad55;"></div>
+                    <span>Compute Resources</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #e8f8f5; border: 2px solid #48bb78;"></div>
+                    <span>Storage Systems</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #fdf2f8; border: 2px solid #ed64a6;"></div>
+                    <span>Network Services</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-symbol" style="background: #f0e6ff; border: 2px solid #9f7aea;"></div>
+                    <span>Monitoring</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>🏗️ Architecture Overview</h3>
+            <ul>
+                <li><strong>Layered Design</strong>: Components organized by functional responsibility</li>
+                <li><strong>Security First</strong>: All data transfers encrypted (TLS), access controlled via IAM</li>
+                <li><strong>Resource Management</strong>: Tagging policy ensures proper resource tracking and cleanup</li>
+                <li><strong>Data Isolation</strong>: Synthetic/de-identified data only, stored in secure COS</li>
+                <li><strong>Cost Control</strong>: Automated budget monitoring with multi-tier alerting</li>
+                <li><strong>Automated Cleanup</strong>: Weekly idle resource checks prevent orphaned assets</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔄 Data Flow Patterns</h3>
+            <ul>
+                <li><strong>Ingress</strong>: Researcher → SFTP/Aspera → Cloud Object Storage</li>
+                <li><strong>Processing</strong>: COS → GPU VSI → Block Storage (working) → GPU VSI</li>
+                <li><strong>Egress</strong>: GPU VSI → COS (results) → Researcher access</li>
+                <li><strong>Monitoring</strong>: All resources → Budget Monitor → Alert System → Researcher</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔗 Key Interfaces</h3>
+            <ul>
+                <li><strong>SSH</strong>: Secure remote access to GPU compute instances</li>
+                <li><strong>SFTP/Aspera</strong>: High-speed, encrypted data transfer protocols</li>
+                <li><strong>REST API</strong>: IBM Cloud service interactions (implied)</li>
+                <li><strong>Block Protocol</strong>: Direct attached storage for compute instances</li>
+                <li><strong>Object Storage API</strong>: S3-compatible interface for COS operations</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
