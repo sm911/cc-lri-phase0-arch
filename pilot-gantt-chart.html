@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilot/PoC Timeline - Gantt Chart 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .chart-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .gantt-chart {
+            min-width: 1000px;
+            position: relative;
+        }
+
+        .timeline-header {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .phase-label {
+            width: 250px;
+            padding: 0 20px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .months-container {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .month {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            border-left: 1px solid #dee2e6;
+            padding: 5px;
+            min-width: 120px;
+        }
+
+        .month:first-child {
+            border-left: none;
+        }
+
+        .phase-row {
+            display: flex;
+            margin-bottom: 15px;
+            min-height: 80px;
+            align-items: stretch;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .phase-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .phase-info {
+            width: 250px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .phase-name {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .phase-dates {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .bar-container {
+            flex: 1;
+            position: relative;
+            padding: 20px 10px;
+        }
+
+        .gantt-bar {
+            position: absolute;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .gantt-bar:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .preparation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            left: 55%;
+            width: 15%;
+        }
+
+        .mvp {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            left: 70%;
+            width: 30%;
+        }
+
+        .pilot {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            left: 100%;
+            width: 37.5%;
+        }
+
+        .review {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            left: 122.5%;
+            width: 15%;
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 250px;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            pointer-events: none;
+        }
+
+        .grid-line {
+            flex: 1;
+            border-left: 1px dashed #e9ecef;
+            min-width: 120px;
+        }
+
+        .grid-line:first-child {
+            border-left: none;
+        }
+
+        .legend {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .milestone-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 500px;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -48%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .milestone-popup.active {
+            display: block;
+        }
+
+        .popup-header {
+            margin-bottom: 20px;
+        }
+
+        .popup-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .popup-dates {
+            color: #6c757d;
+        }
+
+        .popup-content {
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+            transition: color 0.3s;
+        }
+
+        .popup-close:hover {
+            color: #2c3e50;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8em; }
+            .phase-label, .phase-info { width: 200px; }
+            .grid-lines { left: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pilot/PoC Timeline</h1>
+            <p>September - December 2025</p>
+        </div>
+
+        <div class="chart-container">
+            <div class="gantt-chart">
+                <div class="timeline-header">
+                    <div class="phase-label">Phase</div>
+                    <div class="months-container">
+                        <div class="month">September</div>
+                        <div class="month">October</div>
+                        <div class="month">November</div>
+                        <div class="month">December</div>
+                    </div>
+                </div>
+
+                <div class="grid-lines">
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                </div>
+
+                <div class="phase-row">
+                    <div class="phase-info">
+                        <div class="phase-name">Preparation</div>
+                        <div class="phase-dates">Mid Sep - Sep 30</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="gantt-bar preparation" onclick="showMilestone('preparation')">
+                            Setup & Planning
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-row">
+                    <div class="phase-info">
+                        <div class="phase-name">MVP Development</div>
+                        <div class="phase-dates">Oct 1 - Oct 31</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="gantt-bar mvp" onclick="showMilestone('mvp')">
+                            Build & Test
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-row">
+                    <div class="phase-info">
+                        <div class="phase-name">Pilot Execution</div>
+                        <div class="phase-dates">Nov 1 - Dec 15</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="gantt-bar pilot" onclick="showMilestone('pilot')">
+                            Run Workloads
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-row">
+                    <div class="phase-info">
+                        <div class="phase-name">Review & Closure</div>
+                        <div class="phase-dates">Mid Dec - Dec 31</div>
+                    </div>
+                    <div class="bar-container">
+                        <div class="gantt-bar review" onclick="showMilestone('review')">
+                            Evaluate & Decide
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-title">Key Phases</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <span>Preparation Phase</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <span>MVP Development</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    <span>Pilot Execution</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                    <span>Review & Closure</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" onclick="closeMilestone()"></div>
+    
+    <div class="milestone-popup" id="milestonePopup">
+        <button class="popup-close" onclick="closeMilestone()">×</button>
+        <div class="popup-header">
+            <div class="popup-title" id="popupTitle"></div>
+            <div class="popup-dates" id="popupDates"></div>
+        </div>
+        <div class="popup-content" id="popupContent"></div>
+    </div>
+
+    <script>
+        const milestones = {
+            preparation: {
+                title: "Preparation Phase",
+                dates: "Mid September - September 30, 2025",
+                content: `
+                    <strong>Key Milestones:</strong><br><br>
+                    • Submit ServiceNow idea and POC request<br>
+                    • Create IBM Cloud accounts and resource groups<br>
+                    • Define IAM roles for security and access control<br>
+                    • Set up Box folder for document management<br>
+                    • Collect existing documents (workload identification, requirements, etc.)<br><br>
+                    <strong>Target Completion:</strong> September 30, 2025
+                `
+            },
+            mvp: {
+                title: "MVP Development",
+                dates: "October 1 - October 31, 2025",
+                content: `
+                    <strong>Key Milestones:</strong><br><br>
+                    • Jim provides Phase 0 wizard and guide<br>
+                    • Labs provision initial GPU instances<br>
+                    • Test manual data transfer processes<br>
+                    • Verify connectivity and security configurations<br>
+                    • Finalize t-shirt BOM (Bill of Materials)<br><br>
+                    <strong>Duration:</strong> 1 month
+                `
+            },
+            pilot: {
+                title: "Pilot Execution",
+                dates: "November 1 - December 15, 2025",
+                content: `
+                    <strong>Key Milestones:</strong><br><br>
+                    • Labs run workloads in production environment<br>
+                    • Monitor usage patterns and costs<br>
+                    • Adjust resources as needed based on performance<br>
+                    • Weekly check-ins to capture issues and feedback<br>
+                    • Document lessons learned and best practices<br><br>
+                    <strong>Duration:</strong> 6 weeks
+                `
+            },
+            review: {
+                title: "Review & Closure",
+                dates: "Mid December - December 31, 2025",
+                content: `
+                    <strong>Key Milestones:</strong><br><br>
+                    • Demonstrate results to Santino and Dr. Walker<br>
+                    • Review success criteria and KPIs<br>
+                    • Gather comprehensive feedback from all stakeholders<br>
+                    • Decide whether to proceed to Phase 1<br>
+                    • Decommission or pause resources to avoid costs<br><br>
+                    <strong>Target Completion:</strong> December 31, 2025<br><br>
+                    <em>Note: Dates can be adjusted based on resource availability and DR testing schedules.</em>
+                `
+            }
+        };
+
+        function showMilestone(phase) {
+            const popup = document.getElementById('milestonePopup');
+            const overlay = document.querySelector('.overlay');
+            const data = milestones[phase];
+            
+            document.getElementById('popupTitle').textContent = data.title;
+            document.getElementById('popupDates').textContent = data.dates;
+            document.getElementById('popupContent').innerHTML = data.content;
+            
+            popup.classList.add('active');
+            overlay.classList.add('active');
+        }
+
+        function closeMilestone() {
+            document.getElementById('milestonePopup').classList.remove('active');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+
+        // Add keyboard support for closing popup
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMilestone();
+            }
+        });
+    </script>
+</body>
+</html>
